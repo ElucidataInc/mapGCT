@@ -93,6 +93,7 @@ setMethod("initialize",
 #' @param version version of the gct
 #' 
 #' @description create a GCT_object for a given matrix and cloumn description
+#' @export
 to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, rid = NULL, cid = NULL, version = NULL) {
   ds <- new("GCT_object",
             mat = mat,
