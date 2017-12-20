@@ -51,7 +51,19 @@ setValidity("GCT_object",
 setMethod("initialize",
           signature = "GCT_object",
           definition = function(.Object, mat, rid = NULL, cid = NULL, rdesc = NULL, cdesc = NULL,
-                                version = NULL) {
+                                version = c("#1.3", "#1.2")) {
+            
+            version <- match.arg(version)
+            if (version == "#1.3") {
+              if (is.null(cdesc)) {
+                stop("Column descriptors not provided, provide cdesc or set version to #1.2")
+              }else{
+                .Object@version <- version
+              }
+            }else{
+              .Object@version <- version
+            }
+            
            # if (is.null(version)) {
             #  if (is.null(cdesc)) {
              #   .Object@version <- "#1.2"
@@ -131,7 +143,7 @@ to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, rid = NULL, cid = NULL, version 
 #' @family GCTX parsing functions
 #' @export
 
-write_gct <- function(ds, ofile, precision=4, appenddim=T, ver=3) {
+write_gct <- function(ds, ofile, precision=4, appenddim=F, ver=3) {
   if (!class(ds)=="GCT_object") {
     stop("ds must be a GCT_object")
   }
@@ -205,7 +217,5 @@ write_gct <- function(ds, ofile, precision=4, appenddim=T, ver=3) {
   
   cat(sprintf('Saved.\n'))  
 }
-
-
 
 
