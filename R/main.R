@@ -50,8 +50,33 @@ setValidity("GCT_object",
 # define the initialization method for the GCT_object class
 setMethod("initialize",
           signature = "GCT_object",
-          definition = function(.Object, mat, rid = NULL, cid = NULL, rdesc = NULL, cdesc = NULL,
+          definition = function(.Object, mat, rdesc = NULL, cdesc = NULL,
                                 version = c("#1.3", "#1.2")) {
+            .Object@mat = mat
+            .Object@rid = rownames(mat)
+            .Object@cid = colnames(mat)
+            
+            if (!is.null(rdesc)) {
+              if (nrow(rdesc) != nrow(mat)) {
+                stop("rdesc must have same number of rows as matrix has rows")
+              }else if (all(rownames(rdesc) %in% rownames(mat))) {
+                rdesc <- rdesc[rownames(mat), ]
+                .Object@rdesc <- rdesc
+              }else {stop("rownames of rdesc are not same as rownames of matrix")}
+            }else{
+              .Object@rdesc = data.frame()
+            }
+            
+            if (!is.null(cdesc)) {
+              if (nrow(cdesc) != ncol(mat)) {
+                stop("cdesc must have same number of rows as matrix has columns")
+              }else if (all(rownames(cdesc) %in% colnames(mat))) {
+                cdesc <- cdesc[colnames(mat), ]
+                .Object@cdesc <- cdesc
+              }else {stop("rownames of cdesc are not same as colnames of matrix")}
+            }else{
+              .Object@cdesc = data.frame()
+            }
             
             version <- match.arg(version)
             if (version == "#1.3") {
@@ -63,34 +88,6 @@ setMethod("initialize",
             }else{
               .Object@version <- version
             }
-            
-           # if (is.null(version)) {
-            #  if (is.null(cdesc)) {
-             #   .Object@version <- "#1.2"
-              #}else{
-               # .Object@version <- "#1.3"
-              #}
-            #}else{
-             # .Object@version <- "#1.3"
-            #}
-            
-            .Object@version = "#1.3"
-            if (is.null(rdesc)) {
-              .Object@rdesc = data.frame()
-            }else{
-              .Object@rdesc = rdesc
-            }
-            if (is.null(cdesc)) {
-              .Object@cdesc = data.frame()
-            }else{
-              .Object@cdesc = cdesc
-            }
-            
-            .Object@rid = rownames(mat)
-            .Object@cid = colnames(mat)
-            .Object@mat = mat
-            
-            
             return(.Object)
           }
 )
@@ -106,11 +103,9 @@ setMethod("initialize",
 #' 
 #' @description create a GCT_object for a given matrix and cloumn description
 #' @export
-to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, rid = NULL, cid = NULL, version = NULL) {
+to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, version = NULL) {
   ds <- new("GCT_object",
             mat = mat,
-            rid = rid,
-            cid = cid,
             rdesc = rdesc,
             cdesc = cdesc,
             version = version)

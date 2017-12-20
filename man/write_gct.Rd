@@ -4,7 +4,7 @@
 \alias{write_gct}
 \title{Write a GCT_object to disk in GCT format}
 \usage{
-write_gct(ds, ofile, precision = 4, appenddim = T, ver = 3)
+write_gct(ds, ofile, precision = 4, appenddim = F, ver = 3)
 }
 \arguments{
 \item{ds}{the GCT_object to be written}
