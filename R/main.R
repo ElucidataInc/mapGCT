@@ -48,6 +48,39 @@ setValidity("GCT_object",
             }
 )
 
+suppressMessages({
+  # set method for displaying a GCT_object
+  # just use the 'str' function to show its structure
+  setMethod("show", signature("GCT_object"), function(object) {
+    str(object)
+  })
+  
+  # dim, nrow and ncol to display the # of rows and columns
+  # for a GCT_object's matrix
+  setMethod("ncol", signature("GCT_object"), function(x) {
+    ncol(x@mat)
+  })
+  setMethod("nrow", signature("GCT_object"), function(x) {
+    nrow(x@mat)
+  })
+  setMethod("dim", signature("GCT_object"), function(x) {
+    dim(x@mat)
+  })
+  setMethod("range", signature("GCT_object"), function(x, na.rm=F, finite=F) {
+    range(x@mat, na.rm=na.rm, finite=finite)
+  })
+  setMethod("max", signature("GCT_object"), function(x, na.rm=F) {
+    max(x@mat, na.rm=na.rm)
+  })
+  setMethod("min", signature("GCT_object"), function(x, na.rm=F) {
+    min(x@mat, na.rm=na.rm)
+  })
+  setMethod("diag", signature("GCT_object"), function(x) {
+    diag(x@mat)
+  })
+})
+
+
 # define the initialization method for the GCT_object class
 setMethod("initialize",
           signature = "GCT_object",
@@ -293,12 +326,11 @@ fix.datatypes <- function(meta) {
 #' @details \code{parse_gct} also supports parsing of plain text
 #'   GCT files, so this function can be used as a general GCT parser.
 #' 
-#' @example
+#' @examples 
 #' \dontrun{
-#' (ds <- parse_gct("path/to/gct/file"))
-#' 
+#' ds <- parse_gct("path/to/gct/file")
 #' # matrix only
-#' (ds <- parse_gct("path/to/gct/file", matrix_only=TRUE))
+#' ds <- parse_gct("path/to/gct/file", matrix_only=TRUE)
 #' }
 #' 
 #' @family GCT parsing functions

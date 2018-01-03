@@ -23,3 +23,11 @@ Parse a GCT file into the workspace as a GCT_object
 \code{parse_gct} also supports parsing of plain text
   GCT files, so this function can be used as a general GCT parser.
 }
+\examples{
+\dontrun{
+ds <- parse_gct("path/to/gct/file")
+# matrix only
+ds <- parse_gct("path/to/gct/file", matrix_only=TRUE)
+}
+
+}
