@@ -14,10 +14,6 @@ to_GCT(mat, cdesc = NULL, rdesc = NULL, version = NULL)
 \item{rdesc}{a \code{data.frame} of row descriptors}
 
 \item{version}{version of the gct}
-
-\item{rid}{a character vector of row ids}
-
-\item{cid}{a character vector of column ids}
 }
 \description{
 create a GCT_object for a given matrix and cloumn description
