@@ -173,9 +173,8 @@ to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, version = NULL) {
 #' \dontrun{
 #' write.gct(ds, "dataset", precision=2)
 #' }
-#' @family GCTX parsing functions
+#' @family GCT parsing functions
 #' @export
-
 write_gct <- function(ds, ofile, precision=4, ver=3) {
   if (!class(ds)=="GCT_object") {
     stop("ds must be a GCT_object")
@@ -314,6 +313,92 @@ fix.datatypes <- function(meta) {
 }
 
 
+#### define helper method for parsing gct files ###
+
+#' Check whether \code{test_names} are columns in the \code{\link{data.frame}} df
+#' @param test_names a vector of column names to test
+#' @param df the \code{\link{data.frame}} to test against
+#' @param throw_error boolean indicating whether to throw an error if
+#'   any \code{test_names} are not found in \code{df}
+#' @return boolean indicating whether or not all \code{test_names} are
+#'   columns of \code{df}
+#' @examples 
+#' \dontrun{
+#' check_colnames(c("column1", "column2"), df)            # TRUE
+#' check_colnames(c("column1", "not_column"), df, throw_error=FALSE) # FALSE, suppress error
+#' }
+#' @export
+check_colnames <- function(test_names, df, throw_error=T) {
+  # check whether test_names are valid names in df
+  # throw error if specified
+  diffs <- setdiff(test_names, names(df))
+  if (length(diffs) > 0) {
+    if (throw_error) {
+      stop(paste("the following column names are not found in", deparse(substitute(df)), ":",
+                 paste(diffs, collapse=" "), "\n"))
+    } else {
+      return(F)
+    }
+  } else {
+    return(T)
+  }
+}
+
+
+#' Merge two \code{\link{data.frame}}s, but where there are common fields
+#' those in \code{x} are retained and those in \code{y} are dropped.
+#' 
+#' @param x the \code{\link{data.frame}} whose columns take precedence
+#' @param y another \code{\link{data.frame}}
+#' @param by a vector of column names to merge on
+#' @param allow.cartesian boolean indicating whether it's ok
+#'   for repeated values in either table to merge with each other
+#'   over and over again.
+#' @param as_data_frame boolean indicating whether to ensure
+#'   the returned object is a \code{\link{data.frame}} instead of a \code{\link{data.table}}.
+#'   This ensures compatibility with GCT object conventions,
+#'   that is, the \code{\link{rdesc}} and \code{\link{cdesc}} slots must be strictly
+#'   \code{\link{data.frame}} objects.
+#'   
+#' @return a \code{\link{data.frame}} or \code{\link{data.table}} object
+#' 
+#' @examples 
+#' (x <- data.table(foo=letters[1:10], bar=1:10))
+#' (y <- data.table(foo=letters[1:10], bar=11:20, baz=LETTERS[1:10]))
+#' # the 'bar' column from y will be dropped on merge
+#' cmapR:::merge_with_precedence(x, y, by="foo")
+#'
+#' @keywords internal
+#' @seealso data.table::merge
+merge_with_precedence <- function(x, y, by, allow.cartesian=T,
+                                  as_data_frame = T) {
+  trash <- check_colnames(by, x)
+  trash <- check_colnames(by, y)
+  # cast as data.tables
+  x <- data.table(x)
+  y <- data.table(y)
+  # get rid of row names
+  setattr(x, "rownames", NULL)
+  setattr(y, "rownames", NULL)
+  common_cols <- intersect(names(x), names(y))
+  y_keepcols <- unique(c(by, setdiff(names(y), common_cols)))
+  y <- y[, y_keepcols, with=F]
+  # if not all ids match, issue a warning
+  if (!all(x[[by]] %in% y[[by]])) {
+    warning("not all rows of x had a match in y. some columns may contain NA")
+  }
+  # merge keeping all the values in x, making sure that the
+  # resulting data.table is sorted in the same order as the 
+  # original object x
+  merged <- merge(x, y, by=by, allow.cartesian=allow.cartesian, all.x=T)
+  if (as_data_frame) {
+    # cast back to a data.frame if requested
+    merged <- data.frame(merged)
+  }
+  return(merged)
+}
+
+
 #' Parse a GCT file into the workspace as a GCT_object
 #' 
 #' @param fname path to the GCT file on disk
@@ -434,3 +519,65 @@ parse_gct <- function(fname, set_annot_rownames=F, matrix_only=F) {
   return(ds)
 }
 
+
+#' Add annotations to a GCT_object
+#' 
+#' @description Given a GCT_object and either a \code{\link{data.frame}} or
+#' a path to an annotation table, apply the annotations to the
+#' gct using the given \code{keyfield}.
+#' 
+#' @param ds a GCT_object
+#' @param annot a \code{\link{data.frame}} of annotations
+#' @param dimension either 'row' or 'column' indicating which dimension
+#'   of \code{g} to annotate
+#' @param keyfield the character name of the column in \code{annot} that 
+#'   matches the row or column identifiers in \code{g}
+#'   
+#' @return a GCT_object with annotations applied to the specified
+#'   dimension
+#'   
+#' @examples 
+#' \dontrun{
+#'  ds <- parse_gct('/path/to/gct/file')
+#'  ds <- annotate_gct(ds, '/path/to/annot')
+#' }
+#' 
+#' @family GCT utilities
+#' @export
+annotate_gct <- function(ds, annot, dimension = "column", keyfield="id") {
+  if (!class(ds)=="GCT_object") {
+    stop("ds must be a GCT_object")
+  }
+  if (!class(annot) == "data.frame") {
+    stop("annot must be a data.frame")
+  }else{
+    # convert to data.table
+    annot <- data.table(annot)
+  }
+  # convert the keyfield column to id for merging
+  # assumes the gct object has an id field in its existing annotations
+  if (!(keyfield %in% names(annot))) {
+    stop(paste("column", keyfield, "not found in annotations"))
+  }
+  # rename the column to id so we can do the merge
+  annot$id <- annot[[keyfield]]
+  if (dimension == "column") dimension <- "col"
+  if (dimension == "row") {
+    orig_id <- ds@rdesc$id
+    merged <- merge_with_precedence(ds@rdesc, annot, by="id", allow.cartesian=T,
+                                              as_data_frame=T)
+    idx <- match(orig_id, merged$id)
+    merged <- merged[idx, ]
+    ds@rdesc <- merged
+  }else if (dimension == "col") {
+    orig_id <- ds@cdesc$id
+    merged <- merge_with_precedence(ds@cdesc, annot, by="id", allow.cartesian=T,
+                                              as_data_frame=T)
+    idx <- match(orig_id, merged$id)
+    merged <- merged[idx, ]
+    ds@cdesc <- merged
+  }else{
+    stop("dimension must be either row or column")
+  }
+  return(ds)
+}

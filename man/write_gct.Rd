@@ -35,3 +35,6 @@ Since GCT is text format, the higher \code{precision}
 write.gct(ds, "dataset", precision=2)
 }
 }
+\seealso{
+Other GCT parsing functions: \code{\link{parse_gct}}
+}

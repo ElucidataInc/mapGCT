@@ -31,3 +31,6 @@ ds <- parse_gct("path/to/gct/file", matrix_only=TRUE)
 }
 
 }
+\seealso{
+Other GCT parsing functions: \code{\link{write_gct}}
+}
