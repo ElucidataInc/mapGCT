@@ -18,3 +18,10 @@ to_GCT(mat, cdesc = NULL, rdesc = NULL, version = NULL)
 \description{
 create a GCT_object for a given matrix and cloumn description
 }
+\examples{
+(ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc))
+
+#only column description
+(ds <- to_GCT(mat = gct_mat, cdesc = col_desc))
+
+}

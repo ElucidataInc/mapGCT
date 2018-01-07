@@ -31,9 +31,9 @@ Since GCT is text format, the higher \code{precision}
   contains only the matrix data and no annotations.
 }
 \examples{
-\dontrun{
-write.gct(ds, "dataset", precision=2)
-}
+ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc)
+write.gct(ds, "dataset.gct", precision=2)
+
 }
 \seealso{
 Other GCT parsing functions: \code{\link{parse_gct}}

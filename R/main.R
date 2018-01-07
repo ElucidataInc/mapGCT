@@ -139,6 +139,13 @@ setMethod("initialize",
 #' @param version version of the gct
 #' 
 #' @description create a GCT_object for a given matrix and cloumn description
+#' 
+#' @examples 
+#' (ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc))
+#' 
+#' #only column description
+#' (ds <- to_GCT(mat = gct_mat, cdesc = col_desc))
+#' 
 #' @export
 to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, version = NULL) {
   ds <- new("GCT_object",
@@ -170,9 +177,9 @@ to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, version = NULL) {
 #' @return NULL
 #' 
 #' @examples 
-#' \dontrun{
-#' write.gct(ds, "dataset", precision=2)
-#' }
+#' ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc)
+#' write.gct(ds, "dataset.gct", precision=2)
+#' 
 #' @family GCT parsing functions
 #' @export
 write_gct <- function(ds, ofile, precision=4, ver=3) {
@@ -249,162 +256,9 @@ write_gct <- function(ds, ofile, precision=4, ver=3) {
 }
 
 
-#### define helper method for parsing gct files ###
-
-#' Adjust the data types for columns of a meta data frame
-#' 
-#' @description GCT(X) parsing initially returns data frames
-#'   of row and column descriptors where all columns are of
-#'   type character. This is inconvenient for analysis, so
-#'   the goal of this function is to try and guess the
-#'   appropriate data type for each column.
-#'   
-#' @param meta a data.frame
-#' 
-#' @details This is a low-level helper function
-#'   which most users will not need to access directly
-#' 
-#' @return meta the same data frame with (potentially) adjusted
-#'   column types.
-#'   
-#' @examples
-#' \dontrun{
-#' str(cdesc_char)
-#' fixed <- mapGCT:::fix.datatypes(cdesc_char)
-#' str(fixed)
-#' }
-#' 
-#' @keywords internal
-fix.datatypes <- function(meta) {
-  for (field.name in names(meta)) {
-    # get the field values
-    field <- meta[[field.name]]
-    field.except.na <- field[!is.na(field)]
-    # check if it's numeric. data may come in as a string
-    # but actually contains numeric values. if so, as.numeric
-    # will not result in a vector of NA values
-    field.as.numeric <- suppressWarnings(as.numeric(field.except.na))
-    if (!any(is.na(field.as.numeric))) {
-      field <- as.numeric(field)
-    }
-    if (is.numeric(field)) {
-      # check if it's an integer. data may be floats but
-      # if we coerce to an integer and the difference from
-      # original values is zero, that means data are actually
-      # integers. integer conversion will return NA if there
-      # are any issues.
-      field.except.na <- field[!is.na(field)]
-      field.as.integer <- suppressWarnings(as.integer(field.except.na))
-      if (!any(is.na(field.as.integer))) {
-        # integer conversion was fine, lets see if the
-        # values are altered
-        diffs <- field.except.na - field.as.integer
-        if (all(diffs == 0)) {
-          # converting to integer didn't change value,
-          # set field to integer values
-          field <- as.integer(field)
-        }
-      }
-    }
-    # insert back into the annotations
-    meta[[field.name]] <- field
-  }
-  return(meta)
-}
-
-
-#### define helper method for parsing gct files ###
-
-#' Check whether \code{test_names} are columns in the \code{\link{data.frame}} df
-#' @param test_names a vector of column names to test
-#' @param df the \code{\link{data.frame}} to test against
-#' @param throw_error boolean indicating whether to throw an error if
-#'   any \code{test_names} are not found in \code{df}
-#' @return boolean indicating whether or not all \code{test_names} are
-#'   columns of \code{df}
-#' @examples 
-#' \dontrun{
-#' check_colnames(c("column1", "column2"), df)            # TRUE
-#' check_colnames(c("column1", "not_column"), df, throw_error=FALSE) # FALSE, suppress error
-#' }
-#' @export
-check_colnames <- function(test_names, df, throw_error=T) {
-  # check whether test_names are valid names in df
-  # throw error if specified
-  diffs <- setdiff(test_names, names(df))
-  if (length(diffs) > 0) {
-    if (throw_error) {
-      stop(paste("the following column names are not found in", deparse(substitute(df)), ":",
-                 paste(diffs, collapse=" "), "\n"))
-    } else {
-      return(F)
-    }
-  } else {
-    return(T)
-  }
-}
-
-
-#' Merge two \code{\link{data.frame}}s, but where there are common fields
-#' those in \code{x} are retained and those in \code{y} are dropped.
-#' 
-#' @param x the \code{\link{data.frame}} whose columns take precedence
-#' @param y another \code{\link{data.frame}}
-#' @param by a vector of column names to merge on
-#' @param allow.cartesian boolean indicating whether it's ok
-#'   for repeated values in either table to merge with each other
-#'   over and over again.
-#' @param as_data_frame boolean indicating whether to ensure
-#'   the returned object is a \code{\link{data.frame}} instead of a \code{\link{data.table}}.
-#'   This ensures compatibility with GCT object conventions,
-#'   that is, the \code{\link{rdesc}} and \code{\link{cdesc}} slots must be strictly
-#'   \code{\link{data.frame}} objects.
-#'   
-#' @return a \code{\link{data.frame}} or \code{\link{data.table}} object
-#' 
-#' @examples 
-#' (x <- data.table(foo=letters[1:10], bar=1:10))
-#' (y <- data.table(foo=letters[1:10], bar=11:20, baz=LETTERS[1:10]))
-#' # the 'bar' column from y will be dropped on merge
-#' cmapR:::merge_with_precedence(x, y, by="foo")
-#'
-#' @keywords internal
-#' @seealso data.table::merge
-merge_with_precedence <- function(x, y, by, allow.cartesian=T,
-                                  as_data_frame = T) {
-  trash <- check_colnames(by, x)
-  trash <- check_colnames(by, y)
-  # cast as data.tables
-  x <- data.table(x)
-  y <- data.table(y)
-  # get rid of row names
-  setattr(x, "rownames", NULL)
-  setattr(y, "rownames", NULL)
-  common_cols <- intersect(names(x), names(y))
-  y_keepcols <- unique(c(by, setdiff(names(y), common_cols)))
-  y <- y[, y_keepcols, with=F]
-  # if not all ids match, issue a warning
-  if (!all(x[[by]] %in% y[[by]])) {
-    warning("not all rows of x had a match in y. some columns may contain NA")
-  }
-  # merge keeping all the values in x, making sure that the
-  # resulting data.table is sorted in the same order as the 
-  # original object x
-  merged <- merge(x, y, by=by, allow.cartesian=allow.cartesian, all.x=T)
-  if (as_data_frame) {
-    # cast back to a data.frame if requested
-    merged <- data.frame(merged)
-  }
-  return(merged)
-}
-
-
 #' Parse a GCT file into the workspace as a GCT_object
 #' 
 #' @param fname path to the GCT file on disk
-#' @param set_annot_rownames boolean indicating whether to set the
-#'   rownames on the row/column metadata data.frames. Set this to 
-#'   false if the GCT file has duplicate row/column ids.
 #' @param matrix_only boolean indicating whether to parse only
 #'   the matrix (ignoring row and column annotations)
 #'
@@ -412,15 +266,15 @@ merge_with_precedence <- function(x, y, by, allow.cartesian=T,
 #'   GCT files, so this function can be used as a general GCT parser.
 #' 
 #' @examples 
-#' \dontrun{
-#' ds <- parse_gct("path/to/gct/file")
+#' gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+#' (ds <- parse_gct(gct_file))
+#' 
 #' # matrix only
-#' ds <- parse_gct("path/to/gct/file", matrix_only=TRUE)
-#' }
+#' ds <- parse_gct(gct_file, matrix_only=TRUE)
 #' 
 #' @family GCT parsing functions
 #' @export
-parse_gct <- function(fname, set_annot_rownames=F, matrix_only=F) {
+parse_gct <- function(fname, matrix_only=F) {
   ds <- new("GCT_object", src = fname)
   
   if (!(grepl(".gct$", fname)))
@@ -537,10 +391,10 @@ parse_gct <- function(fname, set_annot_rownames=F, matrix_only=F) {
 #'   dimension
 #'   
 #' @examples 
-#' \dontrun{
-#'  ds <- parse_gct('/path/to/gct/file')
-#'  ds <- annotate_gct(ds, '/path/to/annot')
-#' }
+#' #Add column annotations
+#' gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+#' (ds <- parse_gct(gct_file))
+#' ds <- annotate_gct(ds, col_annotate)
 #' 
 #' @family GCT utilities
 #' @export

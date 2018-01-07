@@ -4,14 +4,10 @@
 \alias{parse_gct}
 \title{Parse a GCT file into the workspace as a GCT_object}
 \usage{
-parse_gct(fname, set_annot_rownames = F, matrix_only = F)
+parse_gct(fname, matrix_only = F)
 }
 \arguments{
 \item{fname}{path to the GCT file on disk}
-
-\item{set_annot_rownames}{boolean indicating whether to set the
-rownames on the row/column metadata data.frames. Set this to 
-false if the GCT file has duplicate row/column ids.}
 
 \item{matrix_only}{boolean indicating whether to parse only
 the matrix (ignoring row and column annotations)}
@@ -24,11 +20,11 @@ Parse a GCT file into the workspace as a GCT_object
   GCT files, so this function can be used as a general GCT parser.
 }
 \examples{
-\dontrun{
-ds <- parse_gct("path/to/gct/file")
+gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+(ds <- parse_gct(gct_file))
+
 # matrix only
-ds <- parse_gct("path/to/gct/file", matrix_only=TRUE)
-}
+ds <- parse_gct(gct_file, matrix_only=TRUE)
 
 }
 \seealso{

@@ -27,9 +27,9 @@ a path to an annotation table, apply the annotations to the
 gct using the given \code{keyfield}.
 }
 \examples{
-\dontrun{
- ds <- parse_gct('/path/to/gct/file')
- ds <- annotate_gct(ds, '/path/to/annot')
-}
+#Add column annotations
+gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+(ds <- parse_gct(gct_file))
+ds <- annotate_gct(ds, col_annotate)
 
 }
