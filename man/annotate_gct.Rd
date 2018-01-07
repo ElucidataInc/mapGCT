@@ -28,7 +28,7 @@ gct using the given \code{keyfield}.
 }
 \examples{
 #Add column annotations
-gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+gct_file <- system.file("extdata", "example_n50x100.gct", package="mapGCT")
 (ds <- parse_gct(gct_file))
 ds <- annotate_gct(ds, col_annotate)
 

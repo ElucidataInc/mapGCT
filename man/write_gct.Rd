@@ -32,7 +32,7 @@ Since GCT is text format, the higher \code{precision}
 }
 \examples{
 ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc)
-write.gct(ds, "dataset.gct", precision=2)
+write_gct(ds, "dataset.gct", precision=2)
 
 }
 \seealso{

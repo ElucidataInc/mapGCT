@@ -20,7 +20,7 @@ Parse a GCT file into the workspace as a GCT_object
   GCT files, so this function can be used as a general GCT parser.
 }
 \examples{
-gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+gct_file <- system.file("extdata", "example_n50x100.gct", package="mapGCT")
 (ds <- parse_gct(gct_file))
 
 # matrix only

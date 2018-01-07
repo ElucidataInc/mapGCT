@@ -178,7 +178,7 @@ to_GCT <- function(mat, cdesc=NULL, rdesc=NULL, version = NULL) {
 #' 
 #' @examples 
 #' ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc)
-#' write.gct(ds, "dataset.gct", precision=2)
+#' write_gct(ds, "dataset.gct", precision=2)
 #' 
 #' @family GCT parsing functions
 #' @export
@@ -266,7 +266,7 @@ write_gct <- function(ds, ofile, precision=4, ver=3) {
 #'   GCT files, so this function can be used as a general GCT parser.
 #' 
 #' @examples 
-#' gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+#' gct_file <- system.file("extdata", "example_n50x100.gct", package="mapGCT")
 #' (ds <- parse_gct(gct_file))
 #' 
 #' # matrix only
@@ -392,7 +392,7 @@ parse_gct <- function(fname, matrix_only=F) {
 #'   
 #' @examples 
 #' #Add column annotations
-#' gct_file <- system.file("extdata", "example_n50x100.gct", package="cmapR")
+#' gct_file <- system.file("extdata", "example_n50x100.gct", package="mapGCT")
 #' (ds <- parse_gct(gct_file))
 #' ds <- annotate_gct(ds, col_annotate)
 #' 
