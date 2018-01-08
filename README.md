@@ -36,6 +36,7 @@ There are four main functions for parsing and writing gct files:
   4. `annotate_gct` Add row or column annotations to GCT_object. Can be used to add add extra columns to gct_object
 
 ### Usages
+These functions can be called as follows:
 
   #Convert to GCT_object class
   ds <- to_GCT(mat = gct_mat, cdesc = col_desc, rdesc = row_desc)
