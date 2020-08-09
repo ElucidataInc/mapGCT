@@ -1,3 +1,5 @@
 .Rproj.user
 .Rhistory
 .RData
+mapGCT.Rcheck
+mapGCT_*.tar.gz
