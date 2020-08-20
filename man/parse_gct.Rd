@@ -28,5 +28,7 @@ ds <- parse_gct(gct_file, matrix_only=TRUE)
 
 }
 \seealso{
-Other GCT parsing functions: \code{\link{write_gct}}
+Other GCT parsing functions: 
+\code{\link{write_gct}()}
 }
+\concept{GCT parsing functions}

@@ -36,5 +36,7 @@ write_gct(ds, "dataset.gct", precision=2)
 
 }
 \seealso{
-Other GCT parsing functions: \code{\link{parse_gct}}
+Other GCT parsing functions: 
+\code{\link{parse_gct}()}
 }
+\concept{GCT parsing functions}
