@@ -95,7 +95,7 @@ setMethod("initialize",
               if (nrow(rdesc) != nrow(mat)) {
                 stop("rdesc must have same number of rows as matrix has rows")
               }else if (all(rownames(rdesc) %in% rownames(mat))) {
-                rdesc <- rdesc[rownames(mat), ]
+                rdesc <- rdesc[rownames(mat), , drop = FALSE]
                 .Object@rdesc <- rdesc
               }else {stop("rownames of rdesc are not same as rownames of matrix")}
             }else{
@@ -106,7 +106,7 @@ setMethod("initialize",
               if (nrow(cdesc) != ncol(mat)) {
                 stop("cdesc must have same number of rows as matrix has columns")
               }else if (all(rownames(cdesc) %in% colnames(mat))) {
-                cdesc <- cdesc[colnames(mat), ]
+                cdesc <- cdesc[colnames(mat), , drop = FALSE]
                 .Object@cdesc <- cdesc
               }else {stop("rownames of cdesc are not same as colnames of matrix")}
             }else{
@@ -283,6 +283,7 @@ parse_gct <- function(fname, matrix_only=F) {
   ver = scan(fname, what = "", nlines = 1, sep = "\t", quiet = TRUE)[1]
   # get matrix dimensions by reading second line
   dimensions = scan(fname, what = double(0), nlines = 1, skip = 1, sep = "\t", quiet = TRUE)
+  dimensions <- dimensions[!is.na(dimensions)]  
   nrmat = dimensions[1]
   ncmat = dimensions[2]
   if (length(dimensions)==4) {
@@ -317,7 +318,7 @@ parse_gct <- function(fname, matrix_only=F) {
   # read in the next set of headers (column annotations) and shape into a matrix
   if ( nchd > 0 ) {
     header = scan(fname, what = "", nlines = nchd, skip = 3, sep = "\t", 
-                  quote = NULL, quiet = TRUE)		
+                  quote = NULL, quiet = TRUE)
     header = matrix(header, nrow = nchd, 
                     ncol = ncmat + nrhd + 1, byrow = TRUE)
     # extract the column header and column descriptions
@@ -367,8 +368,12 @@ parse_gct <- function(fname, matrix_only=F) {
     ds@rdesc = fix.datatypes(rdesc)
     ds@cdesc = fix.datatypes(cdesc)
     # add id columns to rdesc and cdesc
-    ds@rdesc$id <- rownames(ds@rdesc)
-    ds@cdesc$id <- rownames(ds@cdesc)
+    if (nrow(rdesc) > 0){
+      ds@rdesc <- data.frame(id = rownames(ds@rdesc), ds@rdesc, stringsAsFactors = FALSE)
+    }
+    if (nrow(cdesc) > 0){ 
+      ds@cdesc <- data.frame(id = rownames(ds@cdesc), ds@cdesc, stringsAsFactors = FALSE)
+    }
   }
   return(ds)
 }

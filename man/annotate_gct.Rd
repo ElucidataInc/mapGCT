@@ -33,3 +33,4 @@ gct_file <- system.file("extdata", "example_n50x100.gct", package="mapGCT")
 ds <- annotate_gct(ds, col_annotate)
 
 }
+\concept{GCT utilities}
