@@ -15,14 +15,14 @@ Alternatively, R's `install.packages` function can be used at a tarball of the `
 
 	# make a gzip tar ball of the repo
 	R CMD build mapGCT
-	# makes mapGCT_0.0.0.9000.tar.gz
+	# makes mapGCT_0.0.1.tar.gz
 	
 	# check that the package is ok
-	R CMD check mapGCT_0.0.0.9000.tar.gz	
+	R CMD check mapGCT_0.0.1.tar.gz	
 
 Once tarball is created, execute following command in R terminal:
 
-	install.packages("mapGCT_0.0.0.9000.tar.gz", type="source", repos=NULL)
+	install.packages("mapGCT_0.0.1.tar.gz", type="source", repos=NULL)
 	library("mapGCT")
 
 
