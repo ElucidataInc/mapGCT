@@ -1,7 +1,7 @@
 Package: mapGCT
 Type: Package
 Title: Read write gct file
-Version: 0.0.1
+Version: 0.0.2
 Author: Shashank Jatav, Navin Chandan, Sunil Dhakad
 Maintainer: The package maintainer <shashank.jatav@elucidata.io>
 Description: Read write gct file
